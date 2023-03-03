@@ -1,301 +1,206 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import {
+  FaArrowUp,
+  FaArrowDown,
+  FaPlay,
+  FaPause,
+  FaSyncAlt,
+} from "react-icons/fa";
 
-let countDown;
+let countDown: NodeJS.Timeout | undefined;
+const PomodoroClock: React.FC = () => {
+  const [breakTime, setBreakTime] = useState<number>(5);
+  const [sessionTime, setSessionTime] = useState<number>(25);
+  const [sessionMinutes, setSessionMinutes] = useState<number>(25);
+  const [sessionSeconds, setSessionSeconds] = useState<number>(0);
+  const [timerIsOn, setTimerIsOn] = useState<boolean>(false);
+  const [session, setSession] = useState<string>("Session");
 
-interface PomodoroProps {}
-
-interface PomodoroState {
-  breakTime: number;
-  sessionTime: number;
-  sessionMinutes: string | number;
-  sessionSeconds: string | number;
-  timerIsOn: boolean;
-  pause: boolean;
-  session: string;
-}
-
-class Pomodoro extends React.Component<PomodoroProps, PomodoroState> {
-  constructor(props: PomodoroProps) {
-    super(props);
-    this.state = {
-      breakTime: 5,
-      sessionTime: 25,
-      sessionMinutes: 25,
-      sessionSeconds: "00",
-      timerIsOn: false,
-      pause: false,
-      session: "Session",
-    };
-  }
-
-  //increment Break Time
-  incrementBreakTime = () => {
-    if (this.state.breakTime < 60 && this.state.timerIsOn === false) {
-      this.setState({
-        breakTime: this.state.breakTime + 1,
-      });
-    }
-  };
-
-  //Decrement Break Time
-  decrementBreakTime = () => {
-    if (this.state.breakTime > 1 && this.state.timerIsOn === false) {
-      this.setState({
-        breakTime: this.state.breakTime - 1,
-      });
-    }
-  };
-
-  //Increment Session's Time
-  incrementSession = () => {
-    if (
-      this.state.sessionTime < 60 &&
-      this.state.timerIsOn === false &&
-      this.state.sessionTime < 9
-    ) {
-      this.setState({
-        sessionTime: this.state.sessionTime + 1,
-        sessionMinutes: "0" + (parseInt(this.state.sessionTime) + 1),
-        sessionSeconds: "00",
-      });
-    } else if (
-      this.state.sessionTime < 60 &&
-      this.state.timerIsOn === false &&
-      parseInt(this.state.sessionTime) >= 9
-    ) {
-      this.setState({
-        sessionTime: this.state.sessionTime + 1,
-        sessionMinutes: parseInt(this.state.sessionTime) + 1,
-        sessionSeconds: "00",
-      });
-    }
-  };
-
-  //Decrement Session's Time
-  decrementSession = () => {
-    if (
-      this.state.sessionTime > 1 &&
-      this.state.sessionTime > 10 &&
-      this.state.timerIsOn === false
-    ) {
-      this.setState({
-        sessionTime: this.state.sessionTime - 1,
-        sessionMinutes: this.state.sessionMinutes - 1,
-        sessionSeconds: "00",
-      });
-    } else if (this.state.sessionTime > 1 && this.state.sessionTime <= 10) {
-      this.setState({
-        sessionTime: this.state.sessionTime - 1,
-        sessionMinutes: "0" + (this.state.sessionMinutes - 1),
-        sessionSeconds: "00",
-      });
-    }
-  };
-
-  //Start/Stop Timer
-  timer = () => {
-    if (this.state.timerIsOn === false) {
-      this.setState({
-        timerIsOn: true,
-      });
-      let seconds =
-        this.state.sessionMinutes * 60 + parseInt(this.state.sessionSeconds);
-
-      const now = Date.now();
-      const then = now + seconds * 1000;
+  useEffect(() => {
+    if (timerIsOn) {
+      const seconds: number = sessionMinutes * 60 + sessionSeconds;
+      const now: number = Date.now();
+      const then: number = now + seconds * 1000;
 
       countDown = setInterval(() => {
-        const secondsLeft = Math.round((then - Date.now()) / 1000);
-        if (
-          this.state.sessionMinutes === "00" &&
-          this.state.sessionSeconds === "00"
-        ) {
-          document.getElementById("beep").play();
+        const secondsLeft: number = Math.round((then - Date.now()) / 1000);
+        if (secondsLeft === 0) {
+          (document.getElementById("beep") as HTMLAudioElement).play();
+          if (session === "Session") {
+            startBreak(breakTime);
+          } else {
+            startSession(sessionTime);
+          }
+        } else if (sessionMinutes === 0 && sessionSeconds === 0) {
+          (document.getElementById("beep") as HTMLAudioElement).play();
+          if (session === "Session") {
+            startBreak(breakTime);
+          } else {
+            startSession(sessionTime);
+          }
+        } else {
+          displayTimeLeft(secondsLeft);
         }
-        // check if we should stop it!
-        if (secondsLeft < 0) {
-          clearInterval(countDown);
-          this.break();
-          return;
-        }
-        //display it
-        this.displayTimeLeft(secondsLeft);
       }, 1000);
     } else {
       clearInterval(countDown);
-      let minuteToPause = this.state.sessionMinutes;
-      let secondsToPause = this.state.sessionSeconds;
-      this.setState({
-        timerIsOn: false,
-        sessionMinutes: minuteToPause,
-        sessionSeconds: secondsToPause,
-      });
+    }
+
+    return () => clearInterval(countDown);
+  }, [
+    timerIsOn,
+    sessionMinutes,
+    sessionSeconds,
+    breakTime,
+    session,
+    sessionTime,
+  ]);
+
+  const incrementBreakTime = (): void => {
+    if (!timerIsOn && breakTime < 60) {
+      setBreakTime(breakTime + 1);
     }
   };
 
-  //Display the timer
-  displayTimeLeft = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainderSeconds = seconds % 60;
-    if (remainderSeconds >= 10 && minutes >= 10) {
-      this.setState({
-        sessionMinutes: minutes,
-        sessionSeconds: remainderSeconds,
-      });
-    } else if (remainderSeconds <= 9) {
-      this.setState({
-        sessionMinutes: "0" + minutes,
-        sessionSeconds: "0" + remainderSeconds,
-      });
-    } else {
-      this.setState({
-        sessionMinutes: "0" + minutes,
-        sessionSeconds: remainderSeconds,
-      });
+  const decrementBreakTime = (): void => {
+    if (!timerIsOn && breakTime > 1) {
+      setBreakTime(breakTime - 1);
     }
   };
 
-  //Check if time is over and the break can start
-  break = () => {
-    if (this.state.pause === false) {
-      if (this.state.breakTime > 9) {
-        this.setState({
-          session: "Break",
-          sessionMinutes: this.state.breakTime,
-          sessionSeconds: "00",
-          timerIsOn: false,
-          pause: true,
-        });
-        this.timer();
-      } else {
-        this.setState({
-          session: "Break",
-          sessionMinutes: "0" + this.state.breakTime,
-          sessionSeconds: "00",
-          timerIsOn: false,
-          pause: true,
-        });
-        this.timer();
-      }
-    } else {
-      if (this.state.sessionTime > 9) {
-        this.setState({
-          session: "Session",
-          sessionMinutes: this.state.sessionTime,
-          sessionSeconds: "00",
-          timerIsOn: false,
-          pause: false,
-        });
-        this.timer();
-      } else {
-        this.setState({
-          session: "Session",
-          sessionMinutes: "0" + this.state.sessionTime,
-          sessionSeconds: "00",
-          timerIsOn: false,
-          pause: false,
-        });
-        this.timer();
-      }
+  const incrementSession = (): void => {
+    if (!timerIsOn && sessionTime < 60) {
+      setSessionTime(sessionTime + 1);
+      setSessionMinutes(sessionTime + 1);
+      setSessionSeconds(0);
     }
   };
 
-  //Reset Time
-  resetTime = () => {
+  const decrementSession = (): void => {
+    if (!timerIsOn && sessionTime > 1) {
+      setSessionTime(sessionTime - 1);
+      setSessionMinutes(sessionTime - 1);
+      setSessionSeconds(0);
+    }
+  };
+
+  const startTimer = (): void => {
+    setTimerIsOn(!timerIsOn);
+  };
+
+  const startSession = (time: number) => {
+    setSession("Session");
+    setSessionMinutes(time);
+    setSessionSeconds(0);
+  };
+
+  const startBreak = (breakLength: number): void => {
+    setSession("Break");
+    setSessionMinutes(breakLength);
+    setSessionSeconds(0);
+    setTimerIsOn(true);
+  };
+
+  const displayTimeLeft = (secondsLeft: number): void => {
+    const minutes: number = Math.floor(secondsLeft / 60);
+    const seconds: number = secondsLeft % 60;
+    setSessionMinutes(minutes);
+    setSessionSeconds(seconds);
+  };
+
+  const reset = () => {
+    setBreakTime(5);
+    setSessionTime(25);
+    setSessionMinutes(25);
+    setSessionSeconds(0);
+    setTimerIsOn(false);
+    setSession("Session");
     clearInterval(countDown);
-    this.setState({
-      session: "Session",
-      breakTime: 5,
-      sessionTime: 25,
-      sessionMinutes: 25,
-      sessionSeconds: "00",
-      timerIsOn: false,
-      pause: false,
-    });
-    document.getElementById("beep").currentTime = 0;
-    document.getElementById("beep").pause();
+    const beep = document.getElementById("beep") as HTMLAudioElement;
+    beep.pause();
+    beep.currentTime = 0;
   };
 
-  render() {
-    return (
-      <div id="container">
-        <div id="clock">
-          <div id="title">
-            <h4>POMODORO CLOCK</h4>
+  return (
+    <div className="pomodoro-clock">
+      <div className="session-length">
+        <h3 id="break-label" className="text-lg font-bold">
+          Break Length
+        </h3>
+        <div className="interval-container">
+          <button
+            id="break-increment"
+            onClick={incrementBreakTime}
+            className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
+          >
+            <FaArrowUp />
+          </button>
+          <div id="break-length" className="text-2xl font-bold">
+            {breakTime}
           </div>
-          <div id="buttons">
-            <div id="break-label">
-              BREAK LENGTH
-              <div id="break">
-                <div
-                  id="break-decrement"
-                  className="material-icons"
-                  onClick={() => this.decrementBreakTime()}
-                >
-                  remove_circle
-                </div>
-                <div id="break-length">{this.state.breakTime}</div>
-                <div
-                  id="break-increment"
-                  className="material-icons"
-                  onClick={() => this.incrementBreakTime()}
-                >
-                  add_circle
-                </div>
-              </div>
-            </div>
-            <div id="session-label">
-              SESSION LENGTH
-              <div id="session">
-                <div
-                  id="session-decrement"
-                  className="material-icons"
-                  onClick={() => this.decrementSession()}
-                >
-                  remove_circle
-                </div>
-                <div id="session-length">{this.state.sessionTime}</div>
-                <div
-                  id="session-increment"
-                  className="material-icons"
-                  onClick={() => this.incrementSession()}
-                >
-                  add_circle
-                </div>
-              </div>
-            </div>
-          </div>
-          <div id="timer-label">
-            <h3>{this.state.session}</h3>
-            <div id="time-left">
-              <audio
-                id="beep"
-                src="https://www.pacdv.com/sounds/interface_sound_effects/sound10.mp3"
-                type="audio/mp3"
-              ></audio>
-              {this.state.sessionMinutes}:{this.state.sessionSeconds}
-            </div>
-            <div id="button-timer">
-              <div
-                id="start_stop"
-                className="material-icons"
-                onClick={() => this.timer()}
-              >
-                play_circle_filled
-              </div>
-              <div
-                id="reset"
-                className="material-icons"
-                onClick={() => this.resetTime()}
-              >
-                replay
-              </div>
-            </div>
-          </div>
+          <button
+            id="break-decrement"
+            onClick={decrementBreakTime}
+            className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
+          >
+            <FaArrowDown />
+          </button>
         </div>
       </div>
-    );
-  }
-}
+      <div className="session-length">
+        <h3 id="session-label" className="text-lg font-bold">
+          Session Length
+        </h3>
+        <div className="interval-container">
+          <button
+            id="session-increment"
+            onClick={incrementSession}
+            className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
+          >
+            <FaArrowUp />
+          </button>
+          <div id="session-length" className="text-2xl font-bold">
+            {sessionTime}
+          </div>
+          <button
+            id="session-decrement"
+            onClick={decrementSession}
+            className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
+          >
+            <FaArrowDown />
+          </button>
+        </div>
+      </div>
+      <div className="timer">
+        <h3 id="timer-label" className="text-lg font-bold">
+          {session}
+        </h3>
+        <div id="time-left" className="text-4xl font-bold">
+          {sessionMinutes < 10 ? "0" : ""}
+          {sessionMinutes}:{sessionSeconds < 10 ? "0" : ""}
+          {sessionSeconds}
+        </div>
+        <button
+          id="start_stop"
+          onClick={startTimer}
+          className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
+        >
+          {timerIsOn ? <FaPause /> : <FaPlay />}
+        </button>
+        <div
+          id="reset"
+          onClick={reset}
+          className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
+        >
+          <FaSyncAlt />
+        </div>
+        <audio
+          id="beep"
+          src="https://www.pacdv.com/sounds/interface_sound_effects/sound10.mp3"
+        ></audio>
+      </div>
+    </div>
+  );
+};
 
-export default Pomodoro;
+export default PomodoroClock;
