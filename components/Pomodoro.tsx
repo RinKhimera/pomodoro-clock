@@ -7,7 +7,7 @@ import {
   FaSyncAlt,
 } from "react-icons/fa";
 
-let countDown: NodeJS.Timeout | undefined;
+let countDown: NodeJS.Timeout;
 const PomodoroClock: React.FC = () => {
   const [breakTime, setBreakTime] = useState<number>(5);
   const [sessionTime, setSessionTime] = useState<number>(25);
@@ -122,9 +122,9 @@ const PomodoroClock: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="pomodoro-clock flex flex-col items-center py-20 w-2/5 gap-14 bg-slate-700">
-        <div className="text-3xl font-bold text-red-200 bg-pink-400 py-2 px-10 rounded-md">
+    <div className="flex items-center justify-center h-screen bg-slate-500">
+      <div className="pomodoro-clock flex flex-col items-center py-20 w-11/12 sm:w-8/12 lg:w-2/5 2xl:w-1/3 gap-14 bg-slate-700 rounded-3xl">
+        <div className="text-4xl font-bold text-slate-700 bg-gray-100 py-3 px-5 rounded-md">
           <h1>POMODORO CLOCK</h1>
         </div>
         <div className="flex gap-10">
@@ -136,7 +136,7 @@ const PomodoroClock: React.FC = () => {
               <button
                 id="break-decrement"
                 onClick={decrementBreakTime}
-                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-2"
+                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-3"
               >
                 <FaArrowDown />
               </button>
@@ -146,7 +146,7 @@ const PomodoroClock: React.FC = () => {
               <button
                 id="break-increment"
                 onClick={incrementBreakTime}
-                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-2"
+                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-3"
               >
                 <FaArrowUp />
               </button>
@@ -160,7 +160,7 @@ const PomodoroClock: React.FC = () => {
               <button
                 id="session-decrement"
                 onClick={decrementSession}
-                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-2"
+                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-3"
               >
                 <FaArrowDown />
               </button>
@@ -170,7 +170,7 @@ const PomodoroClock: React.FC = () => {
               <button
                 id="session-increment"
                 onClick={incrementSession}
-                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-2"
+                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-3"
               >
                 <FaArrowUp />
               </button>
