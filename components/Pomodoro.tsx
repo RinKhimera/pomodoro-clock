@@ -122,82 +122,91 @@ const PomodoroClock: React.FC = () => {
   };
 
   return (
-    <div className="pomodoro-clock">
-      <div className="session-length">
-        <h3 id="break-label" className="text-lg font-bold">
-          Break Length
-        </h3>
-        <div className="interval-container">
-          <button
-            id="break-increment"
-            onClick={incrementBreakTime}
-            className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
-          >
-            <FaArrowUp />
-          </button>
-          <div id="break-length" className="text-2xl font-bold">
-            {breakTime}
+    <div className="flex items-center justify-center h-screen">
+      <div className="pomodoro-clock flex flex-col items-center py-20 w-2/5 gap-14 bg-slate-700">
+        <div className="text-3xl font-bold text-red-200 bg-pink-400 py-2 px-10 rounded-md">
+          <h1>POMODORO CLOCK</h1>
+        </div>
+        <div className="flex gap-10">
+          <div className="break-length text-white flex flex-col gap-2">
+            <h3 id="break-label" className="text-xl font-bold mx-auto">
+              Break Length
+            </h3>
+            <div className="interval-container flex gap-5 mx-auto">
+              <button
+                id="break-decrement"
+                onClick={decrementBreakTime}
+                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-2"
+              >
+                <FaArrowDown />
+              </button>
+              <div id="break-length" className="text-4xl font-bold">
+                {breakTime}
+              </div>
+              <button
+                id="break-increment"
+                onClick={incrementBreakTime}
+                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-2"
+              >
+                <FaArrowUp />
+              </button>
+            </div>
           </div>
-          <button
-            id="break-decrement"
-            onClick={decrementBreakTime}
-            className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
-          >
-            <FaArrowDown />
-          </button>
-        </div>
-      </div>
-      <div className="session-length">
-        <h3 id="session-label" className="text-lg font-bold">
-          Session Length
-        </h3>
-        <div className="interval-container">
-          <button
-            id="session-increment"
-            onClick={incrementSession}
-            className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
-          >
-            <FaArrowUp />
-          </button>
-          <div id="session-length" className="text-2xl font-bold">
-            {sessionTime}
+          <div className="session-length text-white flex flex-col gap-2">
+            <h3 id="session-label" className="text-xl font-bold mx-auto">
+              Session Length
+            </h3>
+            <div className="interval-container flex gap-5 mx-auto">
+              <button
+                id="session-decrement"
+                onClick={decrementSession}
+                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-2"
+              >
+                <FaArrowDown />
+              </button>
+              <div id="session-length" className="text-4xl font-bold">
+                {sessionTime}
+              </div>
+              <button
+                id="session-increment"
+                onClick={incrementSession}
+                className="bg-gray-100 text-gray-900 text-lg hover:bg-gray-400 rounded-full p-2"
+              >
+                <FaArrowUp />
+              </button>
+            </div>
           </div>
-          <button
-            id="session-decrement"
-            onClick={decrementSession}
-            className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
-          >
-            <FaArrowDown />
-          </button>
         </div>
-      </div>
-      <div className="timer">
-        <h3 id="timer-label" className="text-lg font-bold">
-          {session}
-        </h3>
-        <div id="time-left" className="text-4xl font-bold">
-          {sessionMinutes < 10 ? "0" : ""}
-          {sessionMinutes}:{sessionSeconds < 10 ? "0" : ""}
-          {sessionSeconds}
+        <div className="timer grid justify-items-center gap-5 bg-gray-100 text-slate-700 rounded-full p-10">
+          <h3 id="timer-label" className="text-4xl font-bold">
+            {session}
+          </h3>
+          <div id="time-left" className="text-8xl font-bold mb-5">
+            {sessionMinutes < 10 ? "0" : ""}
+            {sessionMinutes}:{sessionSeconds < 10 ? "0" : ""}
+            {sessionSeconds}
+          </div>
+          <div className="flex gap-5 text-3xl">
+            <button
+              id="start_stop"
+              onClick={startTimer}
+              className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-3"
+            >
+              {timerIsOn ? <FaPause /> : <FaPlay />}
+            </button>
+            <button
+              id="reset"
+              onClick={reset}
+              className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-3"
+            >
+              <FaSyncAlt />
+            </button>
+          </div>
+          <audio
+            id="beep"
+            src="https://www.pacdv.com/sounds/interface_sound_effects/sound10.mp3"
+          ></audio>
         </div>
-        <button
-          id="start_stop"
-          onClick={startTimer}
-          className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
-        >
-          {timerIsOn ? <FaPause /> : <FaPlay />}
-        </button>
-        <div
-          id="reset"
-          onClick={reset}
-          className="bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full p-2"
-        >
-          <FaSyncAlt />
-        </div>
-        <audio
-          id="beep"
-          src="https://www.pacdv.com/sounds/interface_sound_effects/sound10.mp3"
-        ></audio>
       </div>
     </div>
   );
